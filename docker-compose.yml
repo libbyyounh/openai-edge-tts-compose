@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  openai-edge-tts:
+    image: travisvn/openai-edge-tts:latest-ffmpeg  # 强烈建议带 ffmpeg 标签，音质和格式兼容性最好
+    container_name: openai-edge-tts
+    ports:
+      - "5050:5050"  # 映射宿主机端口
+    environment:
+      - PORT=5050
+      - TZ=Asia/Shanghai
+      
+      # [安全配置]：设置你自己的 API 密钥。如果想要完全免密裸奔，可将下方 REQUIRE_API_KEY 改为 False
+      - REQUIRE_API_KEY=False
+      - API_KEY=MySecretTtsKey   # 替换为你自己的长密钥，调用时放到 Bearer Token 即可
+      
+      # [默认语言配置]：默认设置为中文普通话和默认爆款音色
+      - DEFAULT_LANGUAGE=zh-CN
+      - DEFAULT_VOICE=zh-CN-YunjianNeural  # 默认设置为云健（抖音云希同款解说音）
+      - DEFAULT_RESPONSE_FORMAT=mp3       # 默认返回格式
+      - DEFAULT_SPEED=1.0                 # 默认语速 (0.25 到 4.0)
+      
+      # [核心特性扩展]
+      - REMOVE_FILTER=False              # 保持 False 状态：自动开启 Markdown 过滤，剔除文本中的 ** 或 # 符号，让朗读更连贯
+      - EXPAND_API=True                  # 保持 True 状态：开启扩展支持，向后兼容各种 AI 客户端
+      - DETAILED_ERROR_LOGGING=True      # 开启详细错误日志，方便容器内排查网络波动
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
